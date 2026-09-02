@@ -3,6 +3,14 @@ import { createI18n } from 'vue-i18n'
 const en = {
   brand: 'Story Shack Observatory', tagline: 'See your story take shape.', library: 'Your observatories', newProject: 'New observatory', startBlank: 'Start blank', open: 'Open', duplicate: 'Duplicate', archive: 'Archive', restore: 'Restore', delete: 'Move to trash', purge: 'Delete permanently', rename: 'Rename', import: 'Import', export: 'Export', about: 'About & privacy', cards: 'story elements', emptyLibrary: 'A clear sky. Start with one bright idea.', title: 'Title', premise: 'Premise', create: 'Create', cancel: 'Cancel', confirm: 'Confirm', search: 'Search this story…', palette: 'Elements', inspector: 'Inspector', noSelection: 'Select a card or connection to explore it.', storyLenses: 'Story Lenses', noGaps: 'No structural gaps found.', relationships: 'Relationships', addRelationship: 'Connect', layout: 'Arrange', constellation: 'Constellation', storyFlow: 'Story flow', tidy: 'Tidy', undo: 'Undo', redo: 'Redo', saved: 'Saved locally', saving: 'Saving…', failed: 'Save failed', install: 'Install', theme: 'Switch theme', suite: 'Story Shack apps', trash: 'Trash', privacyLead: 'Your stories stay in this browser.', privacyBody: 'Observatory has no account, backend, cloud sync, telemetry, or error reporting. When you deliberately use a WebMCP read tool, the bounded content returned by that tool is shared with the browser agent you chose.', localOnly: 'Local-only by design', back: 'All observatories', addCard: 'Add {type}', body: 'Notes', tags: 'Tags', phase: 'Phase', sequence: 'Sequence', filterAll: 'All elements', archiveEmpty: 'No archived observatories.', externalChange: 'This observatory changed in another tab. Reload before editing.', requestStorage: 'Protect local storage', storageGranted: 'Persistent storage enabled', markdown: 'Markdown outline', archiveFile: 'Observatory archive', png: 'Canvas PNG', exportReady: 'Your export is ready.', updateReady: 'A new version is ready.', updateNow: 'Update now', later: 'Later', mobileHint: 'Spatial arrangement is available on a larger screen; every story element remains editable here.'
 }
+Object.assign(en, {
+  tagline: 'See your story take shape',
+  libraryByline: 'Bring characters, places, conflicts, and story beats together on one connected board.',
+  observatoryLabel: 'Observatory',
+  revision: 'Revision',
+  projectActions: 'Project actions',
+  installApp: 'Install app',
+})
 const overrides = {
   da:{tagline:'Se din historie tage form.',library:'Dine observatorier',newProject:'Nyt observatorium',startBlank:'Start tomt',open:'Åbn',cancel:'Annuller',search:'Søg i historien…',saved:'Gemt lokalt'},
   de:{tagline:'Sieh zu, wie deine Geschichte Gestalt annimmt.',library:'Deine Observatorien',newProject:'Neues Observatorium',startBlank:'Leer beginnen',open:'Öffnen',cancel:'Abbrechen',search:'Geschichte durchsuchen…',saved:'Lokal gespeichert'},

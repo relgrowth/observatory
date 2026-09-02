@@ -1,9 +1,10 @@
 import { createCard, createProject, nowIso, uuid } from '../constants.js'
 import { constellationLayout } from '../services/layouts.js'
 
-export const EXAMPLE_VERSION = 2
+export const EXAMPLE_VERSION = 3
 export const EXAMPLE_PROJECT_TITLE = 'Caldris — Children of the Alignment'
 export const LEGACY_EXAMPLE_TITLE = 'The Glass Cartographer'
+export const LEGACY_EXAMPLE_PREMISE = 'A mapmaker discovers that every road she erases vanishes from the world—and one missing road leads to her brother.'
 
 export function createExampleBundle() {
   const project = createProject({

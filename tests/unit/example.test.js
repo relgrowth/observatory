@@ -4,7 +4,7 @@ import { createExampleBundle, EXAMPLE_PROJECT_TITLE, EXAMPLE_VERSION } from '../
 describe('Caldris example observatory', () => {
   it('ships a connected, structured Caldris board', () => {
     const bundle = createExampleBundle()
-    expect(EXAMPLE_VERSION).toBe(2)
+    expect(EXAMPLE_VERSION).toBe(3)
     expect(bundle.project.title).toBe(EXAMPLE_PROJECT_TITLE)
     expect(bundle.cards.length).toBeGreaterThanOrEqual(18)
     expect(bundle.relationships.length).toBeGreaterThanOrEqual(15)

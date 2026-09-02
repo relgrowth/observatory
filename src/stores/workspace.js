@@ -4,7 +4,7 @@ import { createCard, createProject, LIMITS, nowIso, uuid } from '../constants.js
 import { deleteProjectBundle, getDb, getPreference, loadProjectBundle, saveProjectBundle, setPreference } from '../services/db.js'
 import { arrange as calculateLayout } from '../services/layouts.js'
 import { inspectStory } from '../services/lenses.js'
-import { createExampleBundle, EXAMPLE_PROJECT_TITLE, EXAMPLE_VERSION } from '../data/example.js'
+import { createExampleBundle, EXAMPLE_PROJECT_TITLE, EXAMPLE_VERSION, LEGACY_EXAMPLE_PREMISE, LEGACY_EXAMPLE_TITLE } from '../data/example.js'
 
 // Vue wraps live workspace data in proxies, which structuredClone cannot copy.
 // Logical undo snapshots contain JSON records only; media Blobs stay outside them.
@@ -32,6 +32,8 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     await refreshProjects()
     const exampleVersion = await getPreference('exampleVersion', 0)
     if (exampleVersion < EXAMPLE_VERSION) {
+      const untouchedLegacyExample = projects.value.find((project) => project.title === LEGACY_EXAMPLE_TITLE && project.premise === LEGACY_EXAMPLE_PREMISE && project.revision === 1)
+      if (untouchedLegacyExample) await deleteProjectBundle(untouchedLegacyExample.id)
       if (!projects.value.some((project) => project.title === EXAMPLE_PROJECT_TITLE)) await saveProjectBundle(createExampleBundle())
       await setPreference('exampleVersion', EXAMPLE_VERSION)
       await setPreference('exampleCreated', true)
