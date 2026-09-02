@@ -24,8 +24,6 @@ The app opens at `http://localhost:5182`. Use `npm test`, `npm run test:e2e`, `n
 - Page-scoped WebMCP tools with strict schemas, cancellation, revisions, idempotency, visible activity, and human-approved recoverable deletion.
 - Fourteen interface locales.
 
-The current logo is an explicit placeholder awaiting the final Observatory artwork.
-
 ## Privacy
 
 Normal application use makes no network request and sends no content or usage data to Story Shack. If you deliberately invoke a WebMCP read tool, the bounded content returned by that tool is shared with the browser agent you selected. See [docs/PRIVACY.md](docs/PRIVACY.md).

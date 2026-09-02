@@ -14,7 +14,7 @@ async function install(){await installEvent.value?.prompt();installEvent.value=n
 </script>
 <template>
   <header class="app-header">
-    <RouterLink class="brand" to="/" aria-label="Story Shack Observatory home"><span class="brand-mark">O</span><span><strong>Observatory</strong><small>Story Shack</small></span></RouterLink>
+    <RouterLink class="brand" to="/" aria-label="Story Shack Observatory home"><img class="brand-logo" src="/logo-64.webp" width="42" height="42" alt=""><span><strong>Observatory</strong><small>Story Shack</small></span></RouterLink>
     <div v-if="workspace" class="header-project"><strong>{{ store.bundle?.project.title }}</strong><span :class="`save-${store.saveState}`">{{ $t(store.saveState) }}</span></div>
     <nav class="header-actions">
       <template v-if="workspace"><button class="icon-button" :disabled="!store.undoStack.length" :title="$t('undo')" @click="store.undo"><Undo2/></button><button class="icon-button" :disabled="!store.redoStack.length" :title="$t('redo')" @click="store.redo"><Redo2/></button><button class="icon-button" :title="$t('trash')" @click="$emit('trash')"><Archive/></button><button class="icon-button" :title="$t('export')" @click="$emit('export')"><Download/></button></template>

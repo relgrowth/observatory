@@ -15,18 +15,19 @@ export function tidyLayout(cards, selectedIds = null) {
 export function constellationLayout(cards, relationships = []) {
   const list = active(cards)
   const types = [...new Set(list.map((card) => card.typeId))]
-  const hubs = new Map(types.map((type, index) => {
-    const angle = (Math.PI * 2 * index) / Math.max(types.length, 1)
-    return [type, { x: 700 + Math.cos(angle) * 430, y: 480 + Math.sin(angle) * 300 }]
-  }))
-  return list.map((card, index) => {
+  const hubs = new Map(types.map((type, index) => [type, {
+    x: 100 + (index % 4) * 660,
+    y: 100 + Math.floor(index / 4) * 690,
+  }]))
+  return list.map((card) => {
     const siblings = list.filter((entry) => entry.typeId === card.typeId)
     const local = siblings.findIndex((entry) => entry.id === card.id)
-    const angle = (Math.PI * 2 * local) / Math.max(siblings.length, 1)
-    const linked = relationships.filter((edge) => edge.sourceId === card.id || edge.targetId === card.id).length
-    const radius = 90 + Math.min(100, siblings.length * 12) - Math.min(30, linked * 6)
     const hub = hubs.get(card.typeId)
-    return { id: card.id, position: { x: hub.x + Math.cos(angle) * radius - CARD_W / 2, y: hub.y + Math.sin(angle) * radius - CARD_H / 2 } }
+    const linked = relationships.filter((edge) => edge.sourceId === card.id || edge.targetId === card.id).length
+    return { id: card.id, position: {
+      x: hub.x + (local % 2) * (CARD_W + GAP_X) - Math.min(linked, 4) * 3,
+      y: hub.y + Math.floor(local / 2) * (CARD_H + GAP_Y) + Math.min(linked, 4) * 3,
+    } }
   })
 }
 
