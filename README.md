@@ -1,33 +1,28 @@
-# Story Shack Observatory
+# Story Shack Mapworks
 
-Observatory is a local-first visual brainstorming workspace for writers. Arrange characters, locations, conflicts, rules, secrets, and story beats as a living constellation; inspect deterministic Story Lenses; and collaborate with compatible browser agents through WebMCP.
+Mapworks is a local-first fantasy map builder for dungeons, villages, interiors, wilderness regions, and world maps. Paint hand-crafted terrain, build rooms and walls, place semantic objects, add game-master-only labels, and collaborate with compatible browser agents through WebMCP.
 
-Everything stays in the browser. There is no account, application backend, cloud sync, telemetry, or private Story Shack dependency.
+The current product name is provisional while the new Story Shack place-name is selected.
 
-## Run locally
+## Development
 
-```sh
+```bash
 npm install
 npm run dev
+npm test
+npm run test:e2e
+npm run build
 ```
 
-The app opens at `http://localhost:5182`. Use `npm test`, `npm run test:e2e`, `npm run i18n:check`, and `npm run build` to verify it.
+Map data stays in IndexedDB. There is no authentication, backend, cloud synchronization, or telemetry. The application is an installable offline PWA.
 
-## Highlights
+## Features
 
-- IndexedDB projects with revision-safe transactions, multi-tab warnings, recoverable trash, and 50-step session undo/redo.
-- Vue Flow constellation on desktop/tablet and a focused, searchable editor on mobile.
-- Eight structured card types, labelled relationships, visual groups, deterministic layouts, and neutral structural lenses.
-- Portable `.observatory` ZIP archives with checksums, Markdown outlines, and canvas PNG export.
-- Basic and Charcoal themes with bundled Amaranth, Open Sans, and parchment assets.
-- Installable, offline PWA with prompt-based updates.
-- Page-scoped WebMCP tools with strict schemas, cancellation, revisions, idempotency, visible activity, and human-approved recoverable deletion.
-- Fourteen interface locales.
+- Square-grid maps from 8×8 through 96×96 tiles.
+- Chunk-backed terrain plus semantic structures, objects, layers, and labels.
+- Generated hand-painted terrain and object atlases bundled for offline use.
+- Terrain brushes, rectangular room construction, walls, props, hidden information, zoom, grid controls, player view, undo, and redo.
+- Portable `.mapworks`, PNG, and Markdown map-key exports.
+- Page-aware WebMCP tools for bounded reads and durable bulk map operations.
 
-## Privacy
-
-Normal application use makes no network request and sends no content or usage data to Story Shack. If you deliberately invoke a WebMCP read tool, the bounded content returned by that tool is shared with the browser agent you selected. See [docs/PRIVACY.md](docs/PRIVACY.md).
-
-## License
-
-AGPL-3.0-only. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Licensed under AGPL-3.0-only.

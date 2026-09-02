@@ -4,7 +4,5 @@ import App from './App.vue'
 import router from './router.js'
 import i18n from './i18n.js'
 import './assets/main.css'
-import '@vue-flow/core/dist/style.css'
-import '@vue-flow/core/dist/theme-default.css'
 
 createApp(App).use(createPinia()).use(router).use(i18n).mount('#app')

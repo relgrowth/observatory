@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'prompt',
       injectRegister: null,
       manifest: {
-        name: 'Story Shack Observatory',
-        short_name: 'Observatory',
-        description: 'See your story as a living constellation.',
+        name: 'Story Shack Mapworks',
+        short_name: 'Mapworks',
+        description: 'Build dungeons, villages, wilderness, and world maps one tile at a time.',
         id: '/', start_url: '/', scope: '/', display: 'standalone', orientation: 'any',
         theme_color: '#ffffff', background_color: '#ffffff', lang: 'en',
         categories: ['productivity', 'education', 'entertainment'],
@@ -21,11 +21,11 @@ export default defineConfig({
           { src: 'icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
           { src: 'icons/icon-mono-512.png', sizes: '512x512', type: 'image/png', purpose: 'monochrome' },
         ]),
-        shortcuts: [{ name: 'New observatory', short_name: 'New', url: '/?create=true', icons: [{ src: 'icons/icon-96.png', sizes: '96x96' }] }],
+        shortcuts: [{ name: 'New map', short_name: 'New', url: '/?create=true', icons: [{ src: 'icons/icon-96.png', sizes: '96x96' }] }],
         screenshots: [
-          { src: 'screenshots/observatory-basic-1440x900.jpg', sizes: '1440x900', type: 'image/jpeg', form_factor: 'wide', label: 'Arrange story ideas as a connected constellation.' },
-          { src: 'screenshots/observatory-charcoal-1440x900.jpg', sizes: '1440x900', type: 'image/jpeg', form_factor: 'wide', label: 'Explore story flow in Observatory’s Charcoal workspace.' },
-          { src: 'screenshots/observatory-mobile-390x844.jpg', sizes: '390x844', type: 'image/jpeg', form_factor: 'narrow', label: 'Review and edit story elements on mobile.' },
+          { src: 'screenshots/mapworks-basic-1440x900.jpg', sizes: '1440x900', type: 'image/jpeg', form_factor: 'wide', label: 'Build a dungeon with hand-painted terrain and objects.' },
+          { src: 'screenshots/mapworks-charcoal-1440x900.jpg', sizes: '1440x900', type: 'image/jpeg', form_factor: 'wide', label: 'Edit a fantasy map in the Charcoal workspace.' },
+          { src: 'screenshots/mapworks-mobile-390x844.jpg', sizes: '390x844', type: 'image/jpeg', form_factor: 'narrow', label: 'Choose and open local maps on mobile.' },
         ],
       },
       workbox: {
@@ -38,5 +38,5 @@ export default defineConfig({
   resolve: { preserveSymlinks: true, alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   server: { host: true, port: 5182 },
   test: { environment: 'jsdom', globals: true, setupFiles: ['./tests/setup.js'], include: ['tests/unit/**/*.test.js'] },
-  build: { rollupOptions: { output: { manualChunks: { vue: ['vue','pinia','vue-router','vue-i18n'], canvas: ['@vue-flow/core','@vue-flow/background','@vue-flow/controls','@vue-flow/minimap'], export: ['jszip','dom-to-image-more'], validation: ['ajv'] } } } },
+  build: { rollupOptions: { output: { manualChunks: { vue: ['vue','pinia','vue-router','vue-i18n'], export: ['jszip','dom-to-image-more'], validation: ['ajv'] } } } },
 })

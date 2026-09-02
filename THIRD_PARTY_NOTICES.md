@@ -1,5 +1,5 @@
 # Third-party notices
 
-Observatory includes Vue, Pinia, Vue Router, Vue I18n, Vue Flow, idb, JSZip, Ajv, dom-to-image-more, Lucide icons, Vitest, Playwright, Vite, and Vite PWA under their respective open-source licenses.
+Mapworks includes Vue, Pinia, Vue Router, Vue I18n, idb, JSZip, Ajv, dom-to-image-more, Lucide, Vitest, Playwright, Vite, Vite PWA, and the Story Shack shared UI package under their respective licenses.
 
-Amaranth and Open Sans are redistributed under the SIL Open Font License 1.1. The bundled parchment texture is the Story Shack suite texture; its redistribution provenance must be reconfirmed before public release. The Observatory mark is original Story Shack artwork.
+Amaranth and Open Sans are redistributed under the SIL Open Font License 1.1. The parchment texture and application mark are Story Shack assets. The terrain and object atlases in `public/assets` were generated specifically for this project with OpenAI's image generation tool and are included as application artwork.

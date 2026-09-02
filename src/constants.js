@@ -1,45 +1,41 @@
-export const LIMITS = Object.freeze({ projects: 50, cards: 500, relationships: 1000, groups: 100, images: 30, imageBytes: 8 * 1024 * 1024, title: 200, body: 20000, tags: 20, customFields: 12 })
-
-export const CARD_TYPES = Object.freeze([
-  { id: 'premise', color: '#8b5a3c', icon: 'Sparkles', fields: ['summary', 'promise', 'centralQuestion'] },
-  { id: 'character', color: '#9c4f64', icon: 'UserRound', fields: ['role', 'desire', 'fear', 'stakes', 'secret'] },
-  { id: 'location', color: '#3d7666', icon: 'MapPin', fields: ['significance', 'atmosphere', 'constraints'] },
-  { id: 'conflict', color: '#b34d3f', icon: 'Swords', fields: ['opposingForces', 'stakes', 'escalation', 'resolution'] },
-  { id: 'secret', color: '#76568f', icon: 'KeyRound', fields: ['holder', 'consequence', 'plannedReveal'] },
-  { id: 'rule', color: '#50709a', icon: 'Scale', fields: ['rule', 'cost', 'exception'] },
-  { id: 'beat', color: '#b0772f', icon: 'Milestone', fields: ['phase', 'sequence', 'purpose', 'outcome'] },
-  { id: 'note', color: '#6b7280', icon: 'StickyNote', fields: [] },
-])
-
-export const RELATIONSHIP_PRESETS = ['influences', 'opposes', 'wants', 'hidesFrom', 'causes', 'reveals', 'occursAt', 'belongsTo']
-export const TYPE_MAP = Object.freeze(Object.fromEntries(CARD_TYPES.map((type) => [type.id, type])))
-export const nowIso = () => new Date().toISOString()
+export const SCHEMA_VERSION = 2
+export const CHUNK_SIZE = 32
+export const LIMITS = { projects: 50, width: 96, height: 96, objects: 1000, labels: 250, title: 200 }
 export const uuid = () => crypto.randomUUID()
-export const cleanText = (value, limit = LIMITS.body) => String(value ?? '').trim().slice(0, limit)
+export const nowIso = () => new Date().toISOString()
 
-export const createCard = (input = {}, index = 0) => {
-  const typeId = TYPE_MAP[input.typeId] ? input.typeId : (input.typeId || 'note')
-  const type = TYPE_MAP[typeId] || CARD_TYPES[7]
-  const time = nowIso()
-  return {
-    id: input.id || uuid(), projectId: input.projectId, typeId,
-    title: cleanText(input.title || `Untitled ${typeId}`, LIMITS.title), body: cleanText(input.body),
-    fields: Object.fromEntries(Object.entries(input.fields || {}).slice(0, LIMITS.customFields).map(([key, value]) => [cleanText(key, 60), cleanText(value, 4000)])),
-    tags: [...new Set((input.tags || []).map((tag) => cleanText(tag, 40)).filter(Boolean))].slice(0, LIMITS.tags),
-    imageId: input.imageId || null, color: input.color || type.color,
-    position: input.position || { x: 160 + (index % 4) * 300, y: 120 + Math.floor(index / 4) * 230 },
-    size: input.size || { width: 260, height: 180 }, collapsed: Boolean(input.collapsed),
-    createdAt: input.createdAt || time, updatedAt: time, deletedAt: null,
-  }
+export const TERRAIN = [
+  ['stone', 'Worn stone', 0], ['dungeon', 'Dungeon stone', 1], ['grass', 'Grass', 2], ['dark-grass', 'Dark grass', 3],
+  ['earth', 'Packed earth', 4], ['sand', 'Sand', 5], ['shallow-water', 'Shallow water', 6], ['deep-water', 'Deep water', 7],
+  ['cobble', 'Cobblestone', 8], ['mud', 'Mud', 9], ['snow', 'Snow', 10], ['volcanic', 'Volcanic rock', 11],
+  ['wood', 'Wooden planks', 12], ['moss-stone', 'Mossy stone', 13], ['farmland', 'Farmland', 14], ['scree', 'Mountain scree', 15],
+].map(([id, label, sprite]) => ({ id, label, sprite }))
+
+export const OBJECTS = [
+  ['door', 'Door', 0], ['stairs', 'Stairs', 1], ['chest', 'Treasure chest', 2], ['table', 'Table', 3],
+  ['bed', 'Bed', 4], ['barrels', 'Barrels', 5], ['campfire', 'Campfire', 6], ['tree', 'Leafy tree', 7],
+  ['pine', 'Pine tree', 8], ['boulder', 'Boulder', 9], ['bridge', 'Bridge', 10], ['cottage', 'Cottage', 11],
+  ['tower', 'Stone tower', 12], ['well', 'Well', 13], ['ship', 'Ship', 14], ['ruin', 'Ruined statue', 15],
+].map(([id, label, sprite]) => ({ id, label, sprite }))
+
+export const TOOLS = [
+  { id: 'terrain', label: 'Paint terrain' }, { id: 'room', label: 'Draw room' }, { id: 'wall', label: 'Draw wall' },
+  { id: 'object', label: 'Place object' }, { id: 'label', label: 'Add label' }, { id: 'erase', label: 'Erase' },
+]
+
+export function createProject(input = {}) {
+  const createdAt = nowIso()
+  return { id: uuid(), schemaVersion: SCHEMA_VERSION, title: String(input.title || 'Untitled map').slice(0, 200), description: String(input.description || ''), mapType: input.mapType || 'dungeon', gridType: input.gridType || 'square', width: Math.min(LIMITS.width, Math.max(8, Number(input.width) || 28)), height: Math.min(LIMITS.height, Math.max(8, Number(input.height) || 20)), cellSize: 40, revision: 1, thumbnail: null, archivedAt: null, deletedAt: null, createdAt, updatedAt: createdAt }
 }
 
-export const createProject = (input = {}) => {
-  const time = nowIso()
-  return {
-    id: input.id || uuid(), schemaVersion: 1, revision: 1,
-    title: cleanText(input.title || 'Untitled observatory', LIMITS.title),
-    premise: cleanText(input.premise), createdAt: time, updatedAt: time,
-    archivedAt: null, deletedAt: null, thumbnail: null,
-    viewport: { x: 0, y: 0, zoom: 1 },
-  }
+export function createEmptyBundle(input = {}) {
+  const project = createProject(input)
+  const layers = [
+    { id: uuid(), projectId: project.id, kind: 'terrain', name: 'Terrain', visible: true, locked: false, order: 0 },
+    { id: uuid(), projectId: project.id, kind: 'structure', name: 'Structures', visible: true, locked: false, order: 1 },
+    { id: uuid(), projectId: project.id, kind: 'objects', name: 'Objects', visible: true, locked: false, order: 2 },
+    { id: uuid(), projectId: project.id, kind: 'labels', name: 'Labels', visible: true, locked: false, order: 3 },
+  ]
+  const cells = Array(project.width * project.height).fill(input.baseTerrain || (project.mapType === 'dungeon' ? 'dungeon' : 'grass'))
+  return { project, layers, chunks: [{ id: `${project.id}:terrain:0:0`, projectId: project.id, layerId: layers[0].id, x: 0, y: 0, width: project.width, height: project.height, cells }], structures: [], objects: [], labels: [] }
 }
