@@ -10,6 +10,7 @@ Object.assign(en, {
   revision: 'Revision',
   projectActions: 'Project actions',
   installApp: 'Install app',
+  installing: 'Installing…',
 })
 const overrides = {
   da:{tagline:'Se din historie tage form.',library:'Dine observatorier',newProject:'Nyt observatorium',startBlank:'Start tomt',open:'Åbn',cancel:'Annuller',search:'Søg i historien…',saved:'Gemt lokalt'},

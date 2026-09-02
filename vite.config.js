@@ -35,7 +35,7 @@ export default defineConfig({
       devOptions: { enabled: false },
     }),
   ],
-  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  resolve: { preserveSymlinks: true, alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   server: { host: true, port: 5182 },
   test: { environment: 'jsdom', globals: true, setupFiles: ['./tests/setup.js'], include: ['tests/unit/**/*.test.js'] },
   build: { rollupOptions: { output: { manualChunks: { vue: ['vue','pinia','vue-router','vue-i18n'], canvas: ['@vue-flow/core','@vue-flow/background','@vue-flow/controls','@vue-flow/minimap'], export: ['jszip','dom-to-image-more'], validation: ['ajv'] } } } },
