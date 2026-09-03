@@ -1,25 +1,30 @@
 {
-  "name": "story-shack-mapworks",
+  "name": "story-shack-observatory",
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "author": "Martin Hooijmans",
   "license": "AGPL-3.0-only",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "lint": "eslint .",
+    "typecheck": "vue-tsc --noEmit",
+    "check": "npm run lint && npm run typecheck && npm test && npm run i18n:check && npm run build",
+    "screenshots": "node scripts/capture-pwa-screenshots.mjs",
     "i18n:check": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
-    "@story-shack/ui": "file:../story-shack-shared-ui/ui",
     "ajv": "^8.20.0",
-    "dom-to-image-more": "^3.7.1",
     "idb": "^8.0.3",
     "jszip": "^3.10.1",
     "lucide-vue-next": "^0.544.0",
     "pinia": "^2.1.7",
+    "pixi.js": "^8.20.1",
     "vue": "^3.4.0",
     "vue-i18n": "^11.3.2",
     "vue-router": "^4.2.5"
@@ -27,11 +32,17 @@
   "devDependencies": {
     "@playwright/test": "^1.55.0",
     "@vitejs/plugin-vue": "^5.0.0",
+    "@vitest/coverage-v8": "^3.2.7",
     "@vue/test-utils": "^2.4.6",
+    "eslint": "^9.39.5",
+    "eslint-plugin-vue": "^10.10.0",
     "fake-indexeddb": "^6.2.2",
+    "globals": "^16.5.0",
     "jsdom": "^26.1.0",
+    "typescript": "^5.9.3",
     "vite": "^6.0.0",
     "vite-plugin-pwa": "^1.2.0",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "vue-tsc": "^3.3.11"
   }
 }

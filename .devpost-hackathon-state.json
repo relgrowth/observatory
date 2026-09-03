@@ -1,0 +1,40 @@
+{
+  "plugin": "devpost-hackathon",
+  "version": 2,
+  "hackathon": {
+    "slug": "webmcp",
+    "name": "The WebMCP Challenge",
+    "url": "https://webmcp.devpost.com/",
+    "selected": true,
+    "source": "search"
+  },
+  "participant": {
+    "name": "Martin Hooijmans",
+    "display_name": "Martin Hooijmans"
+  },
+  "project": {
+    "name": "Observatory",
+    "summary": "A local-first fantasy map builder that people and browser agents can edit together through WebMCP.",
+    "ai_usage": "WebMCP lets browser agents inspect and edit the same semantic local map as the human editor; OpenAI image generation produced bundled map artwork.",
+    "codex_usage": "Codex supported implementation, debugging, refactoring, testing, documentation, and repository-readiness review."
+  },
+  "current_stage": "prepare-submission",
+  "completed_stages": [
+    "start-hackathon",
+    "review",
+    "resources"
+  ],
+  "rules_acknowledged": true,
+  "learning": {
+    "status": "not-started",
+    "current_step": "",
+    "completed_steps": [],
+    "plan_file": "",
+    "checklist_file": ""
+  },
+  "submission": {
+    "draft_file": "devpost-submission.md",
+    "status": "drafting"
+  },
+  "next_command": "prepare-submission"
+}

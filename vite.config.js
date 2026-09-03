@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'prompt',
       injectRegister: null,
       manifest: {
-        name: 'Story Shack Mapworks',
-        short_name: 'Mapworks',
+        name: 'Observatory',
+        short_name: 'Observatory',
         description: 'Build dungeons, villages, wilderness, and world maps one tile at a time.',
         id: '/', start_url: '/', scope: '/', display: 'standalone', orientation: 'any',
         theme_color: '#ffffff', background_color: '#ffffff', lang: 'en',
@@ -23,13 +23,13 @@ export default defineConfig({
         ]),
         shortcuts: [{ name: 'New map', short_name: 'New', url: '/?create=true', icons: [{ src: 'icons/icon-96.png', sizes: '96x96' }] }],
         screenshots: [
-          { src: 'screenshots/mapworks-basic-1440x900.jpg', sizes: '1440x900', type: 'image/jpeg', form_factor: 'wide', label: 'Build a dungeon with hand-painted terrain and objects.' },
-          { src: 'screenshots/mapworks-charcoal-1440x900.jpg', sizes: '1440x900', type: 'image/jpeg', form_factor: 'wide', label: 'Edit a fantasy map in the Charcoal workspace.' },
-          { src: 'screenshots/mapworks-mobile-390x844.jpg', sizes: '390x844', type: 'image/jpeg', form_factor: 'narrow', label: 'Choose and open local maps on mobile.' },
+          { src: 'screenshots/observatory-basic-1440x900.jpg', sizes: '1440x900', type: 'image/jpeg', form_factor: 'wide', label: 'A lone tower rises from a dense hand-painted forest.' },
+          { src: 'screenshots/observatory-charcoal-1440x900.jpg', sizes: '1440x900', type: 'image/jpeg', form_factor: 'wide', label: 'Explore the abandoned tower map in the Charcoal workspace.' },
+          { src: 'screenshots/observatory-mobile-390x844.jpg', sizes: '390x844', type: 'image/jpeg', form_factor: 'narrow', label: 'Edit the forest tower map on mobile.' },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,jpg,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,png,jpg,webp,svg,woff2}'],
         navigateFallback: '/index.html', skipWaiting: false, clientsClaim: false, cleanupOutdatedCaches: true,
       },
       devOptions: { enabled: false },
@@ -37,6 +37,12 @@ export default defineConfig({
   ],
   resolve: { preserveSymlinks: true, alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   server: { host: true, port: 5182 },
-  test: { environment: 'jsdom', globals: true, setupFiles: ['./tests/setup.js'], include: ['tests/unit/**/*.test.js'] },
-  build: { rollupOptions: { output: { manualChunks: { vue: ['vue','pinia','vue-router','vue-i18n'], export: ['jszip','dom-to-image-more'], validation: ['ajv'] } } } },
+  test: {
+    environment: 'jsdom', globals: true, setupFiles: ['./tests/setup.js'], include: ['tests/unit/**/*.test.js'],
+    coverage: {
+      provider: 'v8', reporter: ['text','html'], include: ['src/{constants,data,services,stores}/**/*.js'],
+      thresholds: { statements: 65, branches: 60, functions: 60, lines: 65 },
+    },
+  },
+  build: { rollupOptions: { output: { manualChunks: { vue: ['vue','pinia','vue-router','vue-i18n'], export: ['jszip'], validation: ['ajv'] } } } },
 })

@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LibraryView from './views/LibraryView.vue'
-import MapView from './views/MapView.vue'
-import AboutView from './views/AboutView.vue'
+
+const MapView=()=>import('./views/MapView.vue')
+const AboutView=()=>import('./views/AboutView.vue')
 
 export default createRouter({
   history: createWebHistory(),
