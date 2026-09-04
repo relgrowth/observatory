@@ -28,15 +28,15 @@ An open map registers one stable project tool set. Drawing tools do not appear a
 - `set_map_layer_visibility` shows or hides the terrain, structure, object, and label layers.
 - `change_map_history` performs one undo or redo step.
 - `delete_map_elements` recoverably removes known semantic elements after human approval.
-- `export_map` initiates a local PNG, portable archive, or Markdown notes download.
+- `export_map` initiates a local PNG, `.observatory` archive, or Markdown-notes download. The archive and notes options are agent-only utilities: the human editor exposes PNG only, and no archive import workflow is currently available.
 
-`get_observatory_capabilities` returns this stable project tool list, coordinate limits, batching limits, and safety contract so an agent can plan before opening a map.
+`get_observatory_capabilities` returns this stable project tool list, frame presets, base landscapes, coordinate ceiling, batching limits, and safety contract so an agent can plan before opening a map. `get_map_context` returns the current frame's `x`, `y`, `width`, `height`, `right`, `bottom`, and `base_terrain`; those values are the authoritative planning boundary.
 
-It also returns advisory visual guidance. Organic terrain should generally use overlapping, offset strokes with varied radii, `natural` or `wild` edges, and 65–100% softness. Lower softness remains available for roads, masonry, excavated areas, and other intentional hard boundaries. Cell regions are best suited to precise or deliberately blocky layouts. Boundary lines should represent actual cliffs, hedges, walls, or palisades rather than automatically outlining every terrain edge, while related objects should be clustered with subtle rotation and scale variation. These are compositional defaults, not validation rules.
+It also returns advisory visual guidance and a recommended composition workflow. Agents should plan one readable scene inside the frame, establish broad terrain masses and a focal crossing or shared space, then add soft transition bands and routes that explain how people move. Organic terrain should generally use a few confident, overlapping strokes with varied radii, `natural` or `wild` edges, and 80–100% softness; paths may cross the frame for clean clipping. Lower softness remains available for roads, masonry, excavated areas, and other intentional hard boundaries. Objects should form purposeful, varied clusters around routes and landmarks instead of even rows or disconnected stamps. A final context read and rendered inspection should catch hard seams, blocked routes, repetitive spacing, weak hierarchy, and accidental empty areas. These are compositional defaults, not validation rules.
 
 ## Coordinates, inspection, and styles
 
-Coordinates are signed world-space grid units with the current limit reported by the capability tool. Objects and labels use anchor coordinates. Shape coordinates describe the top-left of their editable bounding box. Continuous paths accept fractional coordinates.
+Coordinates are grid units within the current map frame. Objects and labels use anchor coordinates. Shape coordinates describe the top-left of their editable bounding box. Continuous paths accept fractional coordinates. Terrain strokes may cross the frame and are visually clipped, matching the human brush. Region cells, lines, objects, shapes, labels, and relevant updates are constrained into the frame, and mutation responses report an `adjusted` count when requested geometry was moved or resized.
 
 Agents should read `get_map_context` with `detail: "overview"` before mutation, then request the relevant paged element type. Omitting region coordinates pages through that element type across the whole map; supplying a region filters it spatially. Element reads contain stable IDs and all editable style properties. Shape, line, and terrain-stroke point arrays are opt-in because geometry can be large.
 

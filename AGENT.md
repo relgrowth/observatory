@@ -6,7 +6,7 @@ This repository contains Observatory, the local-first Story Shack fantasy map bu
 
 - No authentication, backend, cloud sync, telemetry, runtime CDN dependency, or private production credential.
 - Persist logical mutations through the workspace store and IndexedDB transaction boundary. Do not write to IndexedDB from view components.
-- Keep signed world coordinates within `WORLD_COORDINATE_LIMIT` authoritative for editing, undo, WebMCP, import, and export. The visible grid is an optional guide, not a geometry boundary.
+- Keep each project's fixed frame authoritative for editing, undo, WebMCP, and export. `WORLD_COORDINATE_LIMIT` remains only the outer storage/schema safety ceiling. The visible grid is an optional guide inside the frame.
 - Treat rendering as a projection of map data. A visual improvement must not silently change logical coordinates or saved terrain.
 - Permanent destructive actions remain human-owned. WebMCP exposes recoverable removal only.
 
@@ -38,7 +38,7 @@ Important invariants:
 - A wall is a continuous path with round joins and caps. Never convert new walls into detached cell sprites.
 - Keep committed data and transient interaction data separate. A pointer move should update only the lightweight preview scene; pointer-up commits one logical mutation.
 - Give each pointer gesture its final persisted entity ID before drawing begins. As soon as that ID appears in committed state, suppress its transient copy in the same render pass so asynchronous persistence can never double-render or flash the stroke.
-- PNG export must use the same ordered strokes, world-space material periods, clipped rooms, continuous walls, object transforms, and content bounds as the live scene.
+- PNG export must use the same ordered strokes, world-space material periods, clipped rooms, continuous walls, object transforms, and exact frame as the live scene.
 
 ## Large-map performance invariants
 
@@ -108,8 +108,8 @@ For every new object:
 - Match the terrain palette, line treatment, scale, and overhead lighting.
 - Define a meaningful width and height in logical cells; do not default every object to one cell.
 - Keep empty transparent padding consistent so selection bounds feel accurate.
-- Verify placement ghost, selection box, resize, rotation, bring-to-front, export, content bounds, and WebMCP discovery.
-- Increase atlas-grid calculations everywhere together if the object atlas exceeds 4x4.
+- Verify placement ghost, selection box, resize, rotation, bring-to-front, framed export, frame-aware WebMCP discovery, and boundary adjustment.
+- `OBJECT_ATLAS_COLUMNS` is the shared atlas-grid contract. Change it together with the source builder, picker background sizing, Pixi frame slicing, PNG export, tests, and catalogue whenever the grid grows.
 
 ## Persistence and schemas
 

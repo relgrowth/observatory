@@ -8,7 +8,7 @@ WebMCP is a page-scoped adapter over those same stores, not a parallel map model
 
 The WebMCP implementation separates its generic registration, validation, approval, idempotency, and result-envelope runtime (`webMcpRuntime.js`) from the Observatory-specific schemas and tool catalog (`webMcp.js`). Editor-wide styles live in `main.css`; canvas, map tooling, selection, and responsive editor styles live in `map-editor.css`.
 
-The live scene is one PixiJS/WebGL canvas. Terrain materials are sampled in shared world space so texture coordinates never restart at brush samples or old cells. The renderer draws continuous terrain, structures, objects, labels, selection, and the active brush preview in explicit layers. It renders on demand rather than running a permanent animation loop. The grid is only a visual guide and is not a geometry boundary.
+The live scene is one PixiJS/WebGL canvas clipped to the project's fixed rectangular frame. Terrain materials are sampled in shared world space so texture coordinates never restart at brush samples or old cells. The renderer draws continuous terrain, structures, objects, labels, selection, and the active brush preview in explicit layers. It renders on demand rather than running a permanent animation loop. The grid is only a visual guide inside the frame.
 
 Undo treats terrain strokes as an append log, so a new stroke does not clone the full paint history. IndexedDB persistence diffs records in changed stores rather than deleting and rewriting every row. PNG export uses the same world-space materials, ordered strokes, clipped rooms, and vector walls as the editor.
 

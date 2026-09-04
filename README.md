@@ -21,16 +21,16 @@ npm run i18n:check
 npm run build
 ```
 
-Working map data stays in IndexedDB unless the user initiates a local export. There is no authentication, backend, cloud synchronization, or telemetry. The application is an installable offline PWA.
+Working map data stays in IndexedDB. The human editor can download a rendered PNG, but it does not currently expose project archive export or import. There is no authentication, backend, cloud synchronization, or telemetry. The application is an installable offline PWA.
 
 ## Features
 
-- A large continuous canvas spanning signed world coordinates from −4,096 to 4,096; the optional square grid is only a guide.
+- A clearly bounded map frame with compact, standard, wide, and grand presets plus optional base landscapes; the square grid is only a guide inside that finished-map boundary.
 - Ordered vector terrain strokes plus semantic rooms, walls, objects, layers, and labels.
 - Generated hand-painted terrain materials with deterministic world-space variation and seamless compositing.
 - Natural, crisp, and wild edge profiles with exact live previews and deterministic organic boundaries.
 - Terrain brushes, editable geometric shapes, styled lines, props, styled text boxes, layer controls, zoom, grid controls, undo, and redo.
-- Portable `.observatory`, PNG, and Markdown map-key exports.
+- PNG export from the human editor. The WebMCP `export_map` tool can also initiate archive and Markdown-notes downloads for compatible browser agents, but these formats are not exposed in the UI and there is currently no project import workflow.
 - A stable page-aware WebMCP surface for bounded inspection, creation, styling, transformation, layers, history, and guarded removal.
 
 ## WebMCP demo

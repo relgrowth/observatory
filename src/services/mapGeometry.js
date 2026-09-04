@@ -7,7 +7,7 @@ export const distance=(first,second)=>Math.hypot(second.x-first.x,second.y-first
 // Softness feathers the outside of the selected brush footprint. Keeping a
 // broad opaque core makes the visible mark match the diameter shown by the
 // cursor instead of concentrating nearly all coverage at its center.
-export function brushInnerRadius(radius,softness){return Math.max(0,Number(radius)||0)*(1-.35*clamp(Number(softness)||0,0,1))}
+export function brushInnerRadius(radius,softness){return Math.max(0,Number(radius)||0)*(1-.82*clamp(Number(softness)||0,0,1))}
 
 export const STROKE_FALLOFF_STEPS=24
 export function strokeSoftness(stroke){const fallback=stroke.edge==='crisp'?0:stroke.edge==='wild'?1:.75;return clamp(Number(stroke.softness??fallback),0,1)}

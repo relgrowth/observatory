@@ -10,7 +10,7 @@ describe('endless sparse grid', () => {
     expect(terrainAt(bundle, -33, -1)).toBe('snow')
     expect(terrainAt(bundle, 64, 65)).toBe('grass')
     expect(bundle.chunks).toHaveLength(2)
-    expect(getContentBounds(bundle)).toEqual({ minX: -33, minY: -1, maxX: 64, maxY: 65, width: 98, height: 67 })
+    expect(getContentBounds(bundle)).toEqual({ minX: -20, minY: -15, maxX: 20, maxY: 15, width: 40, height: 30 })
   })
 
   it('migrates a fixed legacy board without losing its cells', () => {
@@ -45,7 +45,7 @@ describe('endless sparse grid', () => {
   it('includes multi-cell object footprints in calculated bounds', () => {
     const bundle=createEmptyBundle({title:'Large landmarks'})
     bundle.objects.push({id:crypto.randomUUID(),projectId:bundle.project.id,layerId:bundle.layers[2].id,assetId:'tree',x:0,y:0,scale:1,deletedAt:null})
-    expect(getContentBounds(bundle)).toEqual({minX:-1,minY:-1,maxX:1,maxY:1,width:3,height:3})
+    expect(getContentBounds(bundle)).toEqual({minX:-20,minY:-15,maxX:20,maxY:15,width:40,height:30})
   })
 
   it('keeps edge profiles sparse and material generation bounded',()=>{

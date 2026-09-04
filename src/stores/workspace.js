@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { createEmptyBundle, getContentBounds, LABEL_COLORS, LABEL_FONTS, LABEL_SIZES, LIMITS, LINE_STYLES, migrateBundleToSparse, nowIso, SCHEMA_VERSION, setTerrainCell, setTerrainStyle, terrainEntries, terrainRenderEntries, terrainStyleAt, uuid, WORLD_COORDINATE_LIMIT } from '../constants.js'
+import { createEmptyBundle, getContentBounds, getMapFrame, LABEL_COLORS, LABEL_FONTS, LABEL_SIZES, LIMITS, LINE_STYLES, migrateBundleToSparse, nowIso, SCHEMA_VERSION, setTerrainCell, setTerrainStyle, terrainEntries, terrainRenderEntries, terrainStyleAt, uuid, WORLD_COORDINATE_LIMIT } from '../constants.js'
 import { createExampleBundle, EXAMPLE_PROJECT_TITLE, EXAMPLE_VERSION } from '../data/example.js'
 import { deleteProjectBundle, getDb, getPreference, loadProjectBundle, saveProjectBundle, setPreference } from '../services/db.js'
 import { createRoomStructure, createTerrainStroke, createWallPath, normalizeRoomStructure, pointInStroke, roomShapePoints } from '../services/mapGeometry.js'
 
 const clone = (value) => JSON.parse(JSON.stringify(value))
-const inBounds = (_project, x, y) => Number.isFinite(x) && Number.isFinite(y) && Math.abs(x) <= WORLD_COORDINATE_LIMIT && Math.abs(y) <= WORLD_COORDINATE_LIMIT
+const inBounds = (project, x, y) => {const frame=getMapFrame(project);return Number.isFinite(x)&&Number.isFinite(y)&&Math.abs(x)<=WORLD_COORDINATE_LIMIT&&Math.abs(y)<=WORLD_COORDINATE_LIMIT&&x>=frame.x&&x<frame.x+frame.width&&y>=frame.y&&y<frame.y+frame.height}
 const CHILD_STORES = ['layers', 'chunks', 'terrainStyles', 'terrainStrokes', 'structures', 'objects', 'labels']
 
 export const useWorkspaceStore = defineStore('workspace', () => {

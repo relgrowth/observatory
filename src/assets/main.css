@@ -51,3 +51,4 @@
   .floating-panel .picker-grip{display:none}
   .asset-panel,.label-panel{display:flex;flex-direction:column}.side-panel{padding-bottom:12px;overflow:auto}.label-fields{overflow:auto}
 }
+.object-swatch{background-image:url('/assets/objects/story-shack-object-atlas.webp');background-size:500% 500%}

@@ -46,7 +46,7 @@ The final review included repository-wide checks for DRY violations, dead code, 
 - Editable rectangles, ellipses, polygons, stars, styled walls, objects, and text boxes.
 - Layer controls, selection transforms, keyboard shortcuts, undo/redo, and cross-tab revision protection.
 - Local-first IndexedDB persistence with no login, backend, telemetry, or cloud synchronization.
-- Portable `.observatory` archives plus PNG and Markdown map-key exports.
+- PNG export from the human editor, with additional archive and Markdown-notes downloads available through the WebMCP tool only.
 - Installable offline PWA with desktop and mobile layouts.
 - Page-scoped WebMCP tools with bounded inspection, stable IDs, schema validation, idempotency, revision guards, and approval-gated removal.
 
@@ -66,7 +66,7 @@ The production bundle contains all normal runtime assets and registers an offlin
 2. Create a blank map from the library.
 3. Ask the browser agent: “Build a map of a lone tower in a dense forest.”
 4. Observe that the agent discovers Observatory's catalog and uses structured tools to create editable terrain, shapes, lines, objects, and labels.
-5. Select or edit an agent-created element manually, use undo/redo, and export the map as PNG or `.observatory`.
+5. Select or edit an agent-created element manually, use undo/redo, and export the map as PNG.
 6. Ask the agent to inspect specific element IDs and refine part of the map. For removal, verify that Observatory requires visible approval before committing the change.
 
 No account or credentials are required. Maps remain in the browser's IndexedDB.
@@ -84,11 +84,11 @@ Current verified results: 40 unit tests and 23 Playwright browser tests pass; ES
 
 ## Public Demo Link
 
-TODO: Add the deployed public URL.
+https://observatory.thestoryshack.com/
 
 ## Public Repository Link
 
-TODO: Add the public GitHub, GitLab, or Bitbucket URL.
+https://github.com/relgrowth/observatory
 
 The repository includes an AGPL-3.0-only license, source, locally bundled assets, build instructions, architecture documentation, privacy documentation, security reporting guidance, and third-party notices.
 
@@ -125,28 +125,30 @@ Additional recommended evidence:
 - Devpost confirms Martin Hooijmans is authenticated and registered for The WebMCP Challenge.
 - Git history begins September 2, 2026, during the challenge period, so the draft classifies the app as **New**.
 - The live Devpost schedule reported submissions open with a deadline of September 4, 2026 at 08:00 UTC when this draft was prepared.
-- The public live URL, public repository URL, public YouTube video, and confirmed WebMCP test client remain required before final review.
+- The live application and public repository both returned HTTP 200 during preparation.
+- WebMCP was tested with ChatGPT's in-app browser.
+- The public YouTube video remains required before final review.
 - Nothing has been sent to Devpost by this preparation step.
 
 ## Known Limitations
 
 - WebMCP requires a compatible secure, top-level browser context. Unsupported browsers continue as a normal human editor without registering tools.
-- Projects are local to one browser profile unless the user exports and imports a portable archive.
+- Projects are local to one browser profile. The current app has no project archive import workflow, so PNG export is not a restorable project backup.
 - The canvas is intentionally bounded to signed coordinates from −4,096 to 4,096.
 - There is no real-time multi-user collaboration or cloud synchronization.
-- Automated tests validate WebMCP schemas, execution behavior, persistence, and browser workflows, but the exact agent/client used for the final judge walkthrough still needs to be recorded.
+- Automated tests validate WebMCP schemas, execution behavior, persistence, and browser workflows; the deployed WebMCP flow was additionally tested with ChatGPT's in-app browser.
 
 ## TODO Official Form Fields
 
-- **28249 — Submitter Type (required):** TODO — choose `Individual`, `Team of Individuals`, or `Organization`.
-- **28250 — Country of residence of yourself and team members if applicable (required):** TODO.
+- **28249 — Submitter Type (required):** `Individual`.
+- **28250 — Country of residence of yourself and team members if applicable (required):** `Germany`.
 - **28251 — Organization name:** Not applicable unless submitting as an organization.
 - **28252 — App Status (required):** Draft answer: `New`.
 - **28253 — Existing-project update explanation:** Not applicable if `New` is confirmed.
-- **28254 — Live URL (required):** TODO.
+- **28254 — Live URL (required):** `https://observatory.thestoryshack.com/`.
 - **28255 — Testing instructions:** Use the judge walkthrough above; no credentials are required.
-- **28256 — Public code repository URL (required):** TODO.
-- **28257 — Agents or clients used to test WebMCP (required):** TODO — run the deployed workflow in ChatGPT's in-app browser or Chrome 149+ and record the exact client(s).
+- **28256 — Public code repository URL (required):** `https://github.com/relgrowth/observatory`.
+- **28257 — Agents or clients used to test WebMCP (required):** `ChatGPT's in-app browser`.
 - **28258 — AI tools used (required):** Draft answer: OpenAI Codex for implementation, debugging, refactoring, testing, and documentation; OpenAI image generation for locally bundled map artwork.
-- **28259 — Learning derived (required):** TODO — choose `None`, `Moderate`, or `Significant`.
-- **28260 — Career AI value (required):** TODO — choose `Yes` or `No`.
+- **28259 — Learning derived (required):** `Moderate`.
+- **28260 — Career AI value (required):** `Yes`.

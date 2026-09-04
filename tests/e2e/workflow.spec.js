@@ -35,6 +35,32 @@ test('opens the example in the one-canvas editor and places an object',async({pa
   await expect(page.locator('.app-shell')).toHaveClass(/theme-charcoal/)
 })
 
+test('keeps placing copies of the selected object until Escape',async({page})=>{
+  await createBlankMap(page,'Repeated object placement')
+  const center=await canvasPoint(page)
+  await page.getByRole('button',{name:'Place object'}).click()
+  await page.getByTitle(/Treasure chest/).click()
+  await page.mouse.click(center.x-70,center.y)
+  await page.mouse.click(center.x+70,center.y)
+  await expect(page.getByRole('application')).toHaveAttribute('aria-label',/2 objects/)
+  await expect(page.getByRole('button',{name:'Place object'})).toHaveClass(/active/)
+  await expect(page.getByTitle(/Treasure chest/)).toHaveClass(/active/)
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('button',{name:'Select',exact:true})).toHaveClass(/active/)
+  await expect(page.getByTitle(/Treasure chest/)).toHaveCount(0)
+})
+
+test('describes layers and the fixed map frame in plain language',async({page})=>{
+  await createBlankMap(page,'Layer wording')
+  await page.getByRole('button',{name:'Toggle layers'}).click()
+  await expect(page.getByText('Show or hide parts of your map')).toBeVisible()
+  await expect(page.getByText('Painted surfaces')).toBeVisible()
+  await expect(page.getByText('Rooms and lines')).toBeVisible()
+  await expect(page.getByText('Map frame')).toBeVisible()
+  await expect(page.getByText(/cells · .* base · 0 objects/)).toBeVisible()
+  await expect(page.getByText('Continuous canvas')).toHaveCount(0)
+})
+
 test('keeps the header menu English-only',async({page})=>{
   await page.goto('/')
   await page.getByRole('button',{name:'More options'}).click()
@@ -312,6 +338,35 @@ test('supports object transforms, dragging, deletion, zoom, and brush-sized eras
   await expect(page.getByRole('button',{name:'Select',exact:true})).toHaveClass(/active/)
 })
 
+test('keeps a new rectangular object footprint aligned while rotating',async({page})=>{
+  await createBlankMap(page,'Object footprint study')
+  const center=await canvasPoint(page)
+  await page.getByRole('button',{name:'Place object'}).click()
+  await page.getByTitle(/Rowboat/).click()
+  await page.mouse.click(center.x,center.y)
+  const selection=page.locator('.scene-selection-box'),before=await selection.boundingBox()
+  expect(before.height).toBeGreaterThan(before.width*1.7)
+  const rotate=await page.getByRole('button',{name:'Rotate object'}).boundingBox()
+  await page.mouse.move(rotate.x+rotate.width/2,rotate.y+rotate.height/2)
+  await page.mouse.down()
+  await page.mouse.move(center.x+before.height/2,center.y,{steps:6})
+  await page.mouse.up()
+  const after=await selection.boundingBox()
+  expect(after.width).toBeGreaterThan(after.height)
+})
+
+test('keeps terrain and object picker atlases on their own grid sizes',async({page})=>{
+  await createBlankMap(page,'Atlas preview study')
+  await page.getByRole('button',{name:'Paint terrain'}).click()
+  const terrain=page.getByTitle('Dungeon stone').locator('.terrain-swatch')
+  await expect(terrain).toHaveCSS('background-size','400% 400%')
+  await expect(terrain).toHaveCSS('background-position','33.3333% 0%')
+  await page.getByRole('button',{name:'Place object'}).click()
+  const object=page.getByTitle(/Rowboat/).locator('.object-swatch')
+  await expect(object).toHaveCSS('background-size','500% 500%')
+  await expect(object).toHaveCSS('background-position','75% 100%')
+})
+
 test('keeps separate paint and eraser softness defaults',async({page})=>{
   await createBlankMap(page,'Softness study')
   await page.getByRole('button',{name:'Paint terrain'}).click()
@@ -349,6 +404,8 @@ test('deselects an object when the empty canvas is clicked',async({page})=>{
   await page.getByRole('button',{name:'Place object'}).click()
   await page.getByTitle(/Treasure chest/).click()
   await page.getByRole('button',{name:'Close'}).click()
+  await page.mouse.click(center.x,center.y)
+  await page.getByRole('button',{name:'Select'}).click()
   await page.mouse.click(center.x,center.y)
   await expect(page.locator('.scene-selection-box')).toBeVisible()
   await expect(page.locator('.dock-tool[aria-label="Select"]')).toHaveClass(/active/)

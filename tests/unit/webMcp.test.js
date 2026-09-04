@@ -13,7 +13,7 @@ const labelId = '66666666-6666-4666-8666-666666666666'
 function fakeStore() {
   const store = {
     bundle: {
-      project: { id: projectId, title: 'Test', description: 'A test map', mapType: 'dungeon', schemaVersion: 5, revision: 3 },
+      project: { id: projectId, title: 'Test', description: 'A test map', mapType: 'dungeon', schemaVersion: 6, revision: 3, frame: { x: -6, y: -4, width: 13, height: 9, baseTerrain: 'stone' } },
       layers: [
         { id: 'terrain-layer', kind: 'terrain', name: 'Terrain', visible: true, locked: false, order: 0 },
         { id: 'structure-layer', kind: 'structure', name: 'Structures', visible: true, locked: false, order: 1 },
@@ -77,13 +77,37 @@ describe('Observatory WebMCP', () => {
   it('coaches agents toward natural terrain without restricting valid styles', async () => {
     const capabilities = webMcpTestApi.libraryTools({ projects: [] }).find(({ name }) => name === 'get_observatory_capabilities')
     const response = await webMcpTestApi.runTool(capabilities, {})
-    expect(response.data.visual_guidance.natural_terrain).toContain('65-100 softness')
+    expect(response.data.visual_guidance.natural_terrain).toContain('80-100 softness')
+    expect(response.data.visual_guidance.composition).toContain('focal crossing')
+    expect(response.data.visual_guidance.routes).toContain('bridge')
+    expect(response.data.visual_guidance.refinement).toContain('re-read map context')
+    expect(response.data.recommended_workflow).toHaveLength(6)
     const tools = webMcpTestApi.projectTools(fakeStore()),strokes = tools.find(({ name }) => name === 'paint_map_strokes'),regions = tools.find(({ name }) => name === 'paint_map_regions')
     expect(strokes.description).toContain('overlap offset strokes')
     expect(strokes.inputSchema.properties.strokes.items.properties.softness).toMatchObject({ minimum: 0, maximum: 100, default: 100 })
     expect(strokes.inputSchema.properties.strokes.items.properties.softness.description).toContain('coastlines')
     expect(regions.description).toContain('intentionally blocky')
     expect(tools.find(({ name }) => name === 'draw_map_lines').description).toContain('instead of tracing every terrain boundary')
+  })
+
+  it('reports the authoritative frame instead of an endless canvas', async () => {
+    const capabilities = await webMcpTestApi.runTool(webMcpTestApi.libraryTools({ projects: [] }).find(({ name }) => name === 'get_observatory_capabilities'), {})
+    expect(capabilities.data.canvas).toMatchObject({ type: 'fixed rectangular frame', frame_is_authoritative: true })
+    const context = await webMcpTestApi.runTool(webMcpTestApi.projectTools(fakeStore()).find(({ name }) => name === 'get_map_context'), {})
+    expect(context.data.project.canvas).toBe('framed')
+    expect(context.data.frame).toEqual({ x: -6, y: -4, width: 13, height: 9, right: 7, bottom: 5, base_terrain: 'stone' })
+    expect(context.data).not.toHaveProperty('content_bounds')
+  })
+
+  it('constrains semantic placement into the frame and reports adjustments', async () => {
+    const store = fakeStore(), tools = webMcpTestApi.projectTools(store)
+    const objects = await webMcpTestApi.runTool(tools.find(({ name }) => name === 'place_map_objects'), { operation_id: operationId, expected_revision: 3, objects: [{ asset_id: 'tree', x: 99, y: -99, scale: 1 }] })
+    expect(objects.data.adjusted).toBe(1)
+    expect(store.placeObjects.mock.calls[0][0][0]).toMatchObject({ x: 5, y: -3 })
+    webMcpTestApi.operations.clear()
+    const labels = await webMcpTestApi.runTool(tools.find(({ name }) => name === 'add_map_labels'), { operation_id: operationId, expected_revision: 3, labels: [{ text: 'Edge', x: 99, y: 99, box_width: 5, box_height: 2 }] })
+    expect(labels.data.adjusted).toBe(1)
+    expect(store.addLabels.mock.calls[0][0][0]).toMatchObject({ x: 2, y: 3, boxWidth: 5, boxHeight: 2 })
   })
 
   it('rejects additional input and stale revisions', async () => {
@@ -169,8 +193,9 @@ describe('Observatory WebMCP', () => {
     const store = fakeStore(), entry = webMcpTestApi.projectTools(store).find(({ name }) => name === 'update_map_elements')
     const response = await webMcpTestApi.runTool(entry, { operation_id: operationId, expected_revision: 3, updates: [{ kind: 'object', id: objectId, x: 8, scale: 2 }, { kind: 'shape', id: shapeId, shape: 'ellipse', width: 7 }, { kind: 'label', id: labelId, text: 'Changed', color: 'gold', font_size: 1.8 }] })
     expect(response.status).toBe('ok')
-    expect(store.bundle.objects[0]).toMatchObject({ x: 8, scale: 2 })
-    expect(store.bundle.structures[0]).toMatchObject({ shape: 'ellipse', width: 7 })
+    expect(response.data.adjusted).toBe(2)
+    expect(store.bundle.objects[0]).toMatchObject({ x: 5.5, scale: 2 })
+    expect(store.bundle.structures[0]).toMatchObject({ shape: 'ellipse', x: 0, width: 7 })
     expect(store.bundle.structures[0].points).toHaveLength(32)
     expect(store.bundle.labels[0]).toMatchObject({ text: 'Changed', color: 'gold', fontSize: 1.8 })
     expect(store.commit).toHaveBeenCalledTimes(1)

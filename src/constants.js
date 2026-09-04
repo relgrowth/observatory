@@ -1,9 +1,27 @@
-export const SCHEMA_VERSION = 5
+export const SCHEMA_VERSION = 6
 export const CHUNK_SIZE = 32
+export const OBJECT_ATLAS_COLUMNS = 5
 export const WORLD_COORDINATE_LIMIT = 4096
 export const LIMITS = { projects: 50, terrainCells: 50000, objects: 1000, labels: 250, title: 200 }
 export const uuid = () => crypto.randomUUID()
 export const nowIso = () => new Date().toISOString()
+
+export const MAP_FRAME_PRESETS = [
+  { id: 'compact', label: 'Compact', width: 30, height: 20 },
+  { id: 'standard', label: 'Standard', width: 40, height: 30 },
+  { id: 'wide', label: 'Wide', width: 60, height: 36 },
+  { id: 'grand', label: 'Grand', width: 72, height: 48 },
+]
+export const MAP_BASES = [
+  { id: '', label: 'Blank parchment' },
+  { id: 'grass', label: 'Grassland' },
+  { id: 'dark-grass', label: 'Dark grassland' },
+  { id: 'earth', label: 'Packed earth' },
+  { id: 'sand', label: 'Sand' },
+  { id: 'deep-water', label: 'Open ocean' },
+  { id: 'shallow-water', label: 'Shallow water' },
+  { id: 'stone', label: 'Worn stone' },
+]
 
 export const TERRAIN = [
   ['stone', 'Worn stone', 0,15], ['dungeon', 'Dungeon stone', 1,13], ['grass', 'Grass', 2,20], ['dark-grass', 'Dark grass', 3,15],
@@ -13,10 +31,12 @@ export const TERRAIN = [
 ].map(([id, label, sprite, texturePeriod]) => ({ id, label, sprite, texturePeriod }))
 
 export const OBJECTS = [
-  ['door', 'Door', 0,1,1], ['stairs', 'Stairs', 1,2,2], ['chest', 'Treasure chest', 2,1,1], ['table', 'Table', 3,2,2],
+  ['door', 'Door', 0,1,1], ['stairs', 'Stairs', 1,2,2], ['chest', 'Treasure chest', 2,1,1], ['table', 'Table', 3,3,2],
   ['bed', 'Bed', 4,1,2], ['barrels', 'Barrels', 5,2,2], ['campfire', 'Campfire', 6,2,2], ['tree', 'Leafy tree', 7,3,3],
   ['pine', 'Pine tree', 8,3,3], ['boulder', 'Boulder', 9,2,2], ['bridge', 'Bridge', 10,2,3], ['cottage', 'Cottage', 11,3,3],
   ['tower', 'Stone tower', 12,3,3], ['well', 'Well', 13,2,2], ['ship', 'Ship', 14,3,4], ['ruin', 'Ruined statue', 15,2,3],
+  ['chair', 'Chair', 16,1,1], ['crates', 'Crates and supplies', 17,2,2], ['bookshelf', 'Bookshelf', 18,3,1], ['altar', 'Stone altar', 19,2,1.5],
+  ['market-stall', 'Market stall', 20,3,2], ['tent', 'Adventurer tent', 21,3,2], ['wagon', 'Merchant wagon', 22,2,4], ['rowboat', 'Rowboat', 23,2,4],
 ].map(([id, label, sprite, width, height]) => ({ id, label, sprite, width, height }))
 
 export const LINE_STYLES = [
@@ -62,7 +82,8 @@ export const TOOLS = [
 
 export function createProject(input = {}) {
   const createdAt = nowIso()
-  return { id: uuid(), schemaVersion: SCHEMA_VERSION, title: String(input.title || 'Untitled map').slice(0, 200), description: String(input.description || ''), mapType: input.mapType || 'dungeon', gridType: input.gridType || 'square', cellSize: 40, revision: 1, thumbnail: null, archivedAt: null, deletedAt: null, createdAt, updatedAt: createdAt }
+  const preset=MAP_FRAME_PRESETS.find((item)=>item.id===input.framePreset)||MAP_FRAME_PRESETS[1],width=Math.max(12,Math.min(120,Math.round(Number(input.frameWidth)||preset.width))),height=Math.max(12,Math.min(90,Math.round(Number(input.frameHeight)||preset.height)))
+  return { id: uuid(), schemaVersion: SCHEMA_VERSION, title: String(input.title || 'Untitled map').slice(0, 200), description: String(input.description || ''), mapType: input.mapType || 'dungeon', gridType: input.gridType || 'square', cellSize: 40, frame:{x:-width/2,y:-height/2,width,height,baseTerrain:MAP_BASES.some(({id})=>id===input.baseTerrain)?input.baseTerrain:''}, revision: 1, thumbnail: null, archivedAt: null, deletedAt: null, createdAt, updatedAt: createdAt }
 }
 
 export function createEmptyBundle(input = {}) {
@@ -73,7 +94,9 @@ export function createEmptyBundle(input = {}) {
     { id: uuid(), projectId: project.id, kind: 'objects', name: 'Objects', visible: true, locked: false, order: 2 },
     { id: uuid(), projectId: project.id, kind: 'labels', name: 'Labels', visible: true, locked: false, order: 3 },
   ]
-  return { project, layers, chunks: [], terrainStyles: [], terrainStrokes: [], structures: [], objects: [], labels: [] }
+  const bundle={ project, layers, chunks: [], terrainStyles: [], terrainStrokes: [], structures: [], objects: [], labels: [] }
+  if(project.frame.baseTerrain)for(let y=project.frame.y;y<project.frame.y+project.frame.height;y++)for(let x=project.frame.x;x<project.frame.x+project.frame.width;x++)setTerrainCell(bundle,x,y,project.frame.baseTerrain)
+  return bundle
 }
 
 const floorDiv = (value) => Math.floor(value / CHUNK_SIZE)
@@ -129,11 +152,15 @@ export function migrateBundleToSparse(bundle) {
   delete bundle.project.height
   for (const { x, y, terrain } of entries) setTerrainCell(bundle, x, y, terrain)
   if(!Array.isArray(bundle.terrainStrokes))bundle.terrainStrokes=[]
+  if(!bundle.project.frame){const bounds=getContentBounds(bundle,3),width=Math.max(30,Math.ceil(bounds.width/2)*2),height=Math.max(20,Math.ceil(bounds.height/2)*2);bundle.project.frame={x:Math.floor((bounds.minX+bounds.maxX-width)/2),y:Math.floor((bounds.minY+bounds.maxY-height)/2),width,height,baseTerrain:''}}
   return bundle
 }
 
+export function getMapFrame(project){const frame=project?.frame;if(frame&&Number.isFinite(frame.x)&&Number.isFinite(frame.y)&&Number.isFinite(frame.width)&&Number.isFinite(frame.height))return frame;return{x:-20,y:-15,width:40,height:30,baseTerrain:''}}
+
 export function getContentBounds(bundle, padding = 0) {
-  const objectPoints=(bundle?.objects||[]).filter((item)=>!item.deletedAt).flatMap((item)=>{const asset=OBJECTS.find((entry)=>entry.id===item.assetId),size=Math.max(asset?.width||1,asset?.height||1)*(item.scale||1),radius=(size-1)/2;return[{x:item.x-radius,y:item.y-radius},{x:item.x+radius,y:item.y+radius}]})
+  if(bundle?.project?.frame){const frame=getMapFrame(bundle.project);return{minX:frame.x-padding,minY:frame.y-padding,maxX:frame.x+frame.width+padding,maxY:frame.y+frame.height+padding,width:frame.width+padding*2,height:frame.height+padding*2}}
+  const objectPoints=(bundle?.objects||[]).filter((item)=>!item.deletedAt).flatMap((item)=>{const asset=OBJECTS.find((entry)=>entry.id===item.assetId)||{width:1,height:1},scale=item.scale||1,halfWidth=asset.width*scale/2,halfHeight=asset.height*scale/2,angle=(item.rotation||0)*Math.PI/180,extentX=Math.abs(halfWidth*Math.cos(angle))+Math.abs(halfHeight*Math.sin(angle)),extentY=Math.abs(halfWidth*Math.sin(angle))+Math.abs(halfHeight*Math.cos(angle)),centerX=(item.x??0)+.5,centerY=(item.y??0)+.5;return[{x:centerX-extentX,y:centerY-extentY},{x:centerX+extentX,y:centerY+extentY}]})
   const structurePoints=(bundle?.structures||[]).filter((item)=>!item.deletedAt).flatMap((item)=>item.points?.length?item.points:[item])
   const points = [
     ...terrainEntries(bundle),

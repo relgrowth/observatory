@@ -14,15 +14,15 @@ describe('continuous map geometry',()=>{
 
   it('keeps softness in the outer portion of the brush footprint',()=>{
     expect(brushInnerRadius(5,0)).toBe(5)
-    expect(brushInnerRadius(5,1)).toBe(3.25)
-    expect(brushInnerRadius(5,.5)).toBeCloseTo(4.125)
+    expect(brushInnerRadius(5,1)).toBeCloseTo(.9)
+    expect(brushInnerRadius(5,.5)).toBeCloseTo(2.95)
   })
 
   it('provides one shared deterministic falloff contract for live and export renderers',()=>{
     const layers=strokeFalloffLayers(5,1)
     expect(layers).toHaveLength(STROKE_FALLOFF_STEPS)
     expect(layers[0].radius).toBe(5)
-    expect(layers.at(-1).radius).toBe(3.25)
+    expect(layers.at(-1).radius).toBeCloseTo(.9)
     expect(layers.every(({alpha})=>alpha>=0&&alpha<=1)).toBe(true)
     expect(strokeSoftness({edge:'wild'})).toBe(1)
     expect(strokeSoftness({edge:'crisp'})).toBe(0)
