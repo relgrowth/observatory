@@ -94,7 +94,9 @@ The repository includes an AGPL-3.0-only license, source, locally bundled assets
 
 ## Demo Video
 
-TODO: Add the public YouTube URL. The final video must be under three minutes and include audio.
+https://www.youtube.com/watch?v=XLIquI5aeeg
+
+The URL returned HTTP 200 during preparation. Confirm in a signed-out browser that it is public, under three minutes, and includes audio before final submission.
 
 Suggested outline:
 
@@ -127,7 +129,7 @@ Additional recommended evidence:
 - The live Devpost schedule reported submissions open with a deadline of September 4, 2026 at 08:00 UTC when this draft was prepared.
 - The live application and public repository both returned HTTP 200 during preparation.
 - WebMCP was tested with ChatGPT's in-app browser.
-- The public YouTube video remains required before final review.
+- The public YouTube video URL is present and reachable; its visibility, runtime, and audio need one final human check.
 - Nothing has been sent to Devpost by this preparation step.
 
 ## Known Limitations
