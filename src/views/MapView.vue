@@ -98,7 +98,7 @@ async function beginPointer(event){
       if(!touchGesture)cancelInteraction()
       touchGesture=true
       const points=[...activeTouches.values()],center={x:(points[0].x+points[1].x)/2,y:(points[0].y+points[1].y)/2}
-      touchPan={...center,cameraX:camera.value.x,cameraY:camera.value.y}
+      touchPan={distance:Math.max(1,Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y)),zoom:store.zoom,world:pointerPoint({clientX:center.x,clientY:center.y})}
       panning.value=true
       return
     }
@@ -133,7 +133,9 @@ function movePointer(event){
     if(touchGesture){
       if(activeTouches.size>=2&&touchPan){
         const points=[...activeTouches.values()],x=(points[0].x+points[1].x)/2,y=(points[0].y+points[1].y)/2
-        camera.value={x:touchPan.cameraX-(x-touchPan.x)/sceneScale.value,y:touchPan.cameraY-(y-touchPan.y)/sceneScale.value}
+        const distance=Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y),rect=mapViewport.value.getBoundingClientRect()
+        zoomTo(touchPan.zoom*distance/touchPan.distance)
+        camera.value={x:touchPan.world.x-(x-rect.left-rect.width/2)/sceneScale.value,y:touchPan.world.y-(y-rect.top-rect.height/2)/sceneScale.value}
       }
       return
     }
@@ -151,7 +153,7 @@ async function finishPointer(event){
   if(event.pointerType==='touch'){
     activeTouches.delete(event.pointerId)
     if(touchGesture){
-      if(activeTouches.size>=2){const points=[...activeTouches.values()];touchPan={x:(points[0].x+points[1].x)/2,y:(points[0].y+points[1].y)/2,cameraX:camera.value.x,cameraY:camera.value.y}}
+      if(activeTouches.size>=2){const points=[...activeTouches.values()],x=(points[0].x+points[1].x)/2,y=(points[0].y+points[1].y)/2;touchPan={distance:Math.max(1,Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y)),zoom:store.zoom,world:pointerPoint({clientX:x,clientY:y})}}
       else{touchPan=null;panning.value=false}
       if(!activeTouches.size)touchGesture=false
       return

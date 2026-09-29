@@ -621,7 +621,7 @@ test('keeps the continuous editor and tools usable on mobile',async({page})=>{
   await assertPanelFitsAboveToolbar('.shape-panel')
 })
 
-test('pans with two touches without saving an interrupted brush stroke',async({page,context})=>{
+test('pans and pinch zooms with two touches without saving an interrupted brush stroke',async({page,context})=>{
   await page.setViewportSize({width:390,height:844})
   await page.goto('/')
   await page.getByRole('button',{name:/Open The Drowsy Village/}).click()
@@ -655,4 +655,29 @@ test('pans with two touches without saving an interrupted brush stroke',async({p
   await touch('touchEnd',point(22,center.x+65,center.y+20))
   await touch('touchEnd')
   await expect(viewport).toHaveAttribute('aria-label',new RegExp(`${objectsBefore} objects`))
+  const zoomBefore=await page.locator('.zoom-value').textContent()
+  await touch('touchStart',point(31,center.x-35,center.y))
+  await touch('touchStart',point(31,center.x-35,center.y),point(32,center.x+35,center.y))
+  await touch('touchMove',point(31,center.x-70,center.y),point(32,center.x+70,center.y))
+  await touch('touchEnd',point(32,center.x+70,center.y))
+  await touch('touchEnd')
+  await expect.poll(async()=>parseInt(await page.locator('.zoom-value').textContent(),10)).toBeGreaterThan(parseInt(zoomBefore,10))
+})
+
+test('keeps the update toast readable above the mobile tool dock',async({page})=>{
+  await page.setViewportSize({width:390,height:844})
+  await page.goto('/')
+  await page.getByRole('button',{name:/Open The Drowsy Village/}).click()
+  await expect(page.locator('.map-scene-canvas')).toBeVisible()
+  await page.evaluate(()=>{
+    const toast=document.createElement('div')
+    toast.className='agent-toast update-toast'
+    toast.innerHTML='<span class="agent-star">✦</span><div><strong>A new version is ready.</strong><p>Your local maps are safe. Update when you are ready.</p></div><button>Update now</button>'
+    document.querySelector('.app-shell').append(toast)
+  })
+  const toast=await page.locator('.update-toast').boundingBox(),button=await page.locator('.update-toast button').boundingBox(),dock=await page.getByRole('navigation',{name:'Map tools'}).boundingBox()
+  expect(toast.x).toBeGreaterThanOrEqual(0)
+  expect(toast.x+toast.width).toBeLessThanOrEqual(390)
+  expect(toast.y+toast.height).toBeLessThanOrEqual(dock.y)
+  expect(button.width).toBeGreaterThan(200)
 })
