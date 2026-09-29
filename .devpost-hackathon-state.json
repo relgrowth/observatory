@@ -18,12 +18,13 @@
     "ai_usage": "WebMCP lets browser agents inspect and edit the same semantic local map as the human editor; OpenAI image generation produced bundled map artwork.",
     "codex_usage": "Codex supported implementation, debugging, refactoring, testing, documentation, and repository-readiness review."
   },
-  "current_stage": "prepare-submission",
+  "current_stage": "submit-project",
   "completed_stages": [
     "start-hackathon",
     "review",
     "resources",
-    "prepare-submission"
+    "prepare-submission",
+    "submit-project"
   ],
   "rules_acknowledged": true,
   "learning": {
@@ -35,7 +36,12 @@
   },
   "submission": {
     "draft_file": "devpost-submission.md",
-    "status": "drafting"
+    "status": "submitted",
+    "project_id": 1416799,
+    "project_slug": "observatory-vtphg9",
+    "submission_id": 1170533,
+    "url": "https://devpost.com/software/observatory-vtphg9",
+    "submitted_at": "2026-09-04T03:50:30.645-04:00"
   },
-  "next_command": "submit-project"
+  "next_command": "hackathon-map"
 }

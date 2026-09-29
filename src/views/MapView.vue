@@ -36,6 +36,8 @@ const exportGatewayOpen=ref(false)
 const assetSearch=ref(''),pickerPositions=ref(loadPickerPositions()),pickerDrag=ref(null)
 const labelText=ref(''),labelSize=ref('medium'),labelFont=ref('cinzel'),labelColor=ref('#fff8e9'),labelBold=ref(false),labelRotation=ref(0),labelFontSize=ref(null),savingLabel=ref(false),labelSaveError=ref('')
 let copiedObject=null,pasteCount=0,labelTransformCleanup=null,labelMoveCleanup=null
+const activeTouches=new globalThis.Map()
+let touchPan=null,touchGesture=false,pendingTouchObject=null
 const TERRAIN_CATEGORIES={stone:'Stone & masonry',dungeon:'Stone & masonry',cobble:'Stone & masonry',wood:'Stone & masonry','moss-stone':'Stone & masonry',grass:'Ground & vegetation','dark-grass':'Ground & vegetation',earth:'Ground & vegetation',mud:'Ground & vegetation',farmland:'Ground & vegetation',sand:'Water & coast','shallow-water':'Water & coast','deep-water':'Water & coast',snow:'Rugged terrain',volcanic:'Rugged terrain',scree:'Rugged terrain'}
 const OBJECT_CATEGORIES={door:'Buildings & passages',stairs:'Buildings & passages',bridge:'Buildings & passages',cottage:'Buildings & passages','market-stall':'Buildings & passages',chest:'Furniture & supplies',table:'Furniture & supplies',bed:'Furniture & supplies',barrels:'Furniture & supplies',chair:'Furniture & supplies',crates:'Furniture & supplies',bookshelf:'Furniture & supplies',altar:'Furniture & supplies',campfire:'Nature & camps',tree:'Nature & camps',pine:'Nature & camps',boulder:'Nature & camps',tent:'Nature & camps',tower:'Landmarks & travel',well:'Landmarks & travel',ship:'Landmarks & travel',ruin:'Landmarks & travel',wagon:'Landmarks & travel',rowboat:'Landmarks & travel'}
 const LAYER_DESCRIPTIONS={terrain:'Painted surfaces',labels:'Map text',objects:'Placed assets',structure:'Rooms and lines'}
@@ -89,6 +91,19 @@ function coalescedPoints(event){const events=typeof event.getCoalescedEvents==='
 async function placeSelectedObject(point){await store.placeObjects([{assetId:store.selectedObject,x:snap(point.x-.5),y:snap(point.y-.5)}])}
 async function beginPointer(event){
   if(event.button!==0&&!(spacePressed.value&&event.button===2))return
+  if(event.pointerType==='touch'){
+    activeTouches.set(event.pointerId,{x:event.clientX,y:event.clientY})
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+    if(activeTouches.size>=2){
+      if(!touchGesture)cancelInteraction()
+      touchGesture=true
+      const points=[...activeTouches.values()],center={x:(points[0].x+points[1].x)/2,y:(points[0].y+points[1].y)/2}
+      touchPan={...center,cameraX:camera.value.x,cameraY:camera.value.y}
+      panning.value=true
+      return
+    }
+    if(touchGesture)return
+  }
   const point=pointerPoint(event);hoverPoint.value=point;event.currentTarget.setPointerCapture?.(event.pointerId)
   if(draftLabelBox.value){await commitDraftLabel();return}
   if(spacePressed.value){panning.value=true;panStart.value={clientX:event.clientX,clientY:event.clientY,x:camera.value.x,y:camera.value.y};return}
@@ -100,7 +115,11 @@ async function beginPointer(event){
     const room=hitRoom(point);if(room){beginRoomMove(event,room);return}
     store.selection=null;openPanel.value=null;return
   }
-  if(store.activeTool==='object'){placeSelectedObject(point);return}
+  if(store.activeTool==='object'){
+    if(event.pointerType==='touch')pendingTouchObject={pointerId:event.pointerId,point}
+    else placeSelectedObject(point)
+    return
+  }
   if(store.activeTool==='label'){dragging.value=true;labelAnchor.value={x:snap(point.x,.25),y:snap(point.y,.25)};hoverPoint.value={...labelAnchor.value};openPanel.value='label';return}
   dragging.value=true
   if(store.activeTool==='room'){roomAnchor.value={x:snap(point.x,.5),y:snap(point.y,.5)};hoverPoint.value={...roomAnchor.value};roomAspectLocked.value=event.shiftKey;return}
@@ -108,6 +127,17 @@ async function beginPointer(event){
   if(['terrain','erase'].includes(store.activeTool))activeStroke.value={id:uuid(),terrain:store.activeTool==='terrain'?store.selectedTerrain:null,mode:store.activeTool==='erase'?'erase':'paint',radius:brushRadius.value,edge:store.activeTool==='terrain'?store.brushEdge:'natural',softness:activeSoftness.value/100,points:[point],discrete:false}
 }
 function movePointer(event){
+  if(event.pointerType==='touch'){
+    if(!activeTouches.has(event.pointerId))return
+    activeTouches.set(event.pointerId,{x:event.clientX,y:event.clientY})
+    if(touchGesture){
+      if(activeTouches.size>=2&&touchPan){
+        const points=[...activeTouches.values()],x=(points[0].x+points[1].x)/2,y=(points[0].y+points[1].y)/2
+        camera.value={x:touchPan.cameraX-(x-touchPan.x)/sceneScale.value,y:touchPan.cameraY-(y-touchPan.y)/sceneScale.value}
+      }
+      return
+    }
+  }
   const point=pointerPoint(event);hoverPoint.value=store.activeTool==='room'&&roomAnchor.value?{x:snap(point.x,.5),y:snap(point.y,.5)}:store.activeTool==='label'&&labelAnchor.value?{x:snap(point.x,.25),y:snap(point.y,.25)}:point
   if(roomAnchor.value)roomAspectLocked.value=event.shiftKey
   if(panning.value&&panStart.value){camera.value={x:panStart.value.x-(event.clientX-panStart.value.clientX)/sceneScale.value,y:panStart.value.y-(event.clientY-panStart.value.clientY)/sceneScale.value};return}
@@ -118,7 +148,17 @@ function movePointer(event){
   else if(activeWall.value)appendLivePoint(activeWall.value,{x:snap(point.x,.125),y:snap(point.y,.125)},.18)
 }
 async function finishPointer(event){
+  if(event.pointerType==='touch'){
+    activeTouches.delete(event.pointerId)
+    if(touchGesture){
+      if(activeTouches.size>=2){const points=[...activeTouches.values()];touchPan={x:(points[0].x+points[1].x)/2,y:(points[0].y+points[1].y)/2,cameraX:camera.value.x,cameraY:camera.value.y}}
+      else{touchPan=null;panning.value=false}
+      if(!activeTouches.size)touchGesture=false
+      return
+    }
+  }
   if(panning.value){panning.value=false;panStart.value=null;return}
+  if(pendingTouchObject?.pointerId===event.pointerId){const point=pendingTouchObject.point;pendingTouchObject=null;await placeSelectedObject(point);return}
   if(objectMoveDrag.value){await finishObjectMove();return}
   if(roomMoveDrag.value){await finishRoomMove();return}
   if(!dragging.value)return
@@ -135,8 +175,17 @@ async function finishObjectMove(){const drag=objectMoveDrag.value;if(!drag)retur
 function beginRoomMove(event,item){store.selection={kind:'room',id:item.id};openPanel.value='selection';roomMoveDrag.value={startClientX:event.clientX,startClientY:event.clientY,startX:item.x,startY:item.y,moved:false};liveRoomTransform.value={x:item.x,y:item.y}}
 function moveRoom(event){const drag=roomMoveDrag.value;if(!drag)return;const x=snap(drag.startX+(event.clientX-drag.startClientX)/sceneScale.value),y=snap(drag.startY+(event.clientY-drag.startClientY)/sceneScale.value);drag.moved=drag.moved||x!==drag.startX||y!==drag.startY;liveRoomTransform.value={x,y}}
 async function finishRoomMove(){const drag=roomMoveDrag.value;if(!drag)return;const patch=liveRoomTransform.value?{...liveRoomTransform.value}:null;roomMoveDrag.value=null;try{if(drag.moved&&patch)await store.updateEntity(patch)}finally{liveRoomTransform.value=null}}
-function cancelInteraction(){labelTransformCleanup?.();labelMoveCleanup?.();dragging.value=false;panning.value=false;panStart.value=null;roomAnchor.value=null;roomAspectLocked.value=false;labelAnchor.value=null;activeStroke.value=null;activeWall.value=null;transformDrag.value=null;roomTransformDrag.value=null;labelTransformDrag.value=null;labelMoveDrag.value=null;objectMoveDrag.value=null;liveObjectTransform.value=null;roomMoveDrag.value=null;liveRoomTransform.value=null;liveLabelTransform.value=null}
-function cancelPointer(){cancelInteraction();hoverPoint.value=null}
+function cancelInteraction(){labelTransformCleanup?.();labelMoveCleanup?.();pendingTouchObject=null;dragging.value=false;panning.value=false;panStart.value=null;roomAnchor.value=null;roomAspectLocked.value=false;labelAnchor.value=null;activeStroke.value=null;activeWall.value=null;transformDrag.value=null;roomTransformDrag.value=null;labelMoveDrag.value=null;objectMoveDrag.value=null;liveObjectTransform.value=null;roomMoveDrag.value=null;liveRoomTransform.value=null;liveLabelTransform.value=null}
+function cancelPointer(event){
+  if(!event){activeTouches.clear();touchGesture=false;touchPan=null}
+  if(event?.pointerType==='touch'){
+    activeTouches.delete(event.pointerId)
+    if(touchGesture&&activeTouches.size){if(activeTouches.size<2){touchPan=null;panning.value=false}return}
+    touchGesture=false;touchPan=null
+  }
+  cancelInteraction();hoverPoint.value=null
+}
+function lostPointerCapture(event){if(event.pointerType==='touch'){if(activeTouches.has(event.pointerId))cancelPointer(event);return}if(dragging.value||panning.value)cancelPointer()}
 function preventSpaceContextMenu(event){if(spacePressed.value)event.preventDefault()}
 function beginObjectTransform(event,type){const item=selectedPlacedObject.value;if(!item)return;const center=screenPoint({x:item.x+.5,y:item.y+.5}),rect=mapViewport.value.getBoundingClientRect(),dx=event.clientX-rect.left-center.x,dy=event.clientY-rect.top-center.y;event.currentTarget.setPointerCapture?.(event.pointerId);transformDrag.value={type,centerX:center.x,centerY:center.y,startDistance:Math.max(1,Math.hypot(dx,dy)),startScale:item.scale||1,startAngle:Math.atan2(dy,dx)*180/Math.PI,startRotation:item.rotation||0};liveObjectTransform.value={x:item.x,y:item.y,scale:item.scale||1,rotation:item.rotation||0}}
 function moveObjectTransform(event){const drag=transformDrag.value;if(!drag)return;const rect=mapViewport.value.getBoundingClientRect(),dx=event.clientX-rect.left-drag.centerX,dy=event.clientY-rect.top-drag.centerY;if(drag.type==='scale')liveObjectTransform.value={...liveObjectTransform.value,scale:Math.max(.25,Math.min(5,drag.startScale*Math.hypot(dx,dy)/drag.startDistance))};else{const angle=Math.atan2(dy,dx)*180/Math.PI;liveObjectTransform.value={...liveObjectTransform.value,rotation:((Math.round((drag.startRotation+angle-drag.startAngle)/5)*5)%360+360)%360}}}
@@ -202,7 +251,7 @@ async function copyAgentPrompt(){await navigator.clipboard?.writeText(agentPromp
   <main v-if="project" class="map-page"><AppHeader workspace @export="download" @shortcuts="shortcutsOpen=true"/><section class="map-workspace"><section ref="mapCanvasShell" class="map-canvas-shell">
     <button class="map-identity tooltip-control tooltip-align-start" title="Back to all maps" data-tooltip="Back to all maps" aria-label="Back to all maps" @click="router.push('/')"><ChevronLeft/></button>
     <MapViewControls :zoom="store.zoom" :show-grid="store.showGrid" :layers-open="openPanel==='layers'" @zoom-out="zoomTo(store.zoom-.1)" @zoom-in="zoomTo(store.zoom+.1)" @fit="fitContent" @toggle-grid="store.showGrid=!store.showGrid" @toggle-layers="openPanel=openPanel==='layers'?null:'layers'"/>
-    <div ref="mapViewport" class="map-viewport continuous-map" :class="{'is-selecting':store.activeTool==='select','space-pan-ready':spacePressed,'space-panning':spacePressed&&panning}" role="application" tabindex="0" :aria-label="`Map canvas with ${store.terrain.length+store.terrainStrokes.length} terrain marks, ${store.visibleObjects.length} objects, and ${store.visibleLabels.length} labels`" @wheel.prevent="wheelZoom" @pointerdown.prevent="beginPointer" @pointermove.prevent="movePointer" @pointerup.prevent="finishPointer" @pointercancel.prevent="cancelPointer" @contextmenu="preventSpaceContextMenu" @lostpointercapture="!dragging&&!panning||cancelPointer()" @pointerleave="!dragging&&!panning&&(hoverPoint=null)" @dblclick.prevent="editLabelAt"><MapSceneCanvas :bundle="store.bundle" :legacy-terrain="store.terrain" :camera-x="camera.x" :camera-y="camera.y" :scale="sceneScale" :show-grid="store.showGrid" :active-stroke="activeStroke" :room-preview="roomPreview" :wall-preview="wallPreview" :hover-point="hoverPoint" :active-tool="store.activeTool" :selected-terrain="store.selectedTerrain" :selected-object="store.selectedObject" :brush-radius="brushRadius" :selection="store.selection" :live-object="sceneLiveObject" :live-room="sceneLiveRoom" :live-label="sceneLiveLabel" :editing-label-id="editingLabelId" :theme="store.theme"/><span v-if="brushCursorStyle" class="brush-cursor" :class="{'is-eraser':store.activeTool==='erase'}" :style="brushCursorStyle"/></div>
+    <div ref="mapViewport" class="map-viewport continuous-map" :class="{'is-selecting':store.activeTool==='select','space-pan-ready':spacePressed,'space-panning':panning}" role="application" tabindex="0" :aria-label="`Map canvas with ${store.terrain.length+store.terrainStrokes.length} terrain marks, ${store.visibleObjects.length} objects, and ${store.visibleLabels.length} labels`" @wheel.prevent="wheelZoom" @pointerdown.prevent="beginPointer" @pointermove.prevent="movePointer" @pointerup.prevent="finishPointer" @pointercancel.prevent="cancelPointer" @contextmenu="preventSpaceContextMenu" @lostpointercapture="lostPointerCapture" @pointerleave="!dragging&&!panning&&(hoverPoint=null)" @dblclick.prevent="editLabelAt"><MapSceneCanvas :bundle="store.bundle" :legacy-terrain="store.terrain" :camera-x="camera.x" :camera-y="camera.y" :scale="sceneScale" :show-grid="store.showGrid" :active-stroke="activeStroke" :room-preview="roomPreview" :wall-preview="wallPreview" :hover-point="hoverPoint" :active-tool="store.activeTool" :selected-terrain="store.selectedTerrain" :selected-object="store.selectedObject" :brush-radius="brushRadius" :selection="store.selection" :live-object="sceneLiveObject" :live-room="sceneLiveRoom" :live-label="sceneLiveLabel" :editing-label-id="editingLabelId" :theme="store.theme"/><span v-if="brushCursorStyle" class="brush-cursor" :class="{'is-eraser':store.activeTool==='erase'}" :style="brushCursorStyle"/></div>
     <div v-if="selectedPlacedObject" class="object-selection-box scene-selection-box" :style="objectSelectionStyle()" @pointerdown.stop><div class="object-transform-toolbar"><button title="Bring to front" aria-label="Bring object to front" @click.stop="store.bringSelectionToFront"><Layers3/></button><button title="Remove object" aria-label="Remove object" @click.stop="store.deleteSelection"><Trash2/></button></div><button class="object-handle rotate-handle" title="Drag to rotate" aria-label="Rotate object" @pointerdown.stop.prevent="beginObjectTransform($event,'rotate')" @pointermove.stop.prevent="moveObjectTransform" @pointerup.stop.prevent="finishObjectTransform" @pointercancel.stop.prevent="finishObjectTransform"><RotateCw aria-hidden="true"/></button><button class="object-handle resize-handle" title="Drag to resize" aria-label="Resize object" @pointerdown.stop.prevent="beginObjectTransform($event,'scale')" @pointermove.stop.prevent="moveObjectTransform" @pointerup.stop.prevent="finishObjectTransform" @pointercancel.stop.prevent="finishObjectTransform"><Scaling aria-hidden="true"/></button></div>
     <div v-if="selectedRoom" class="object-selection-box scene-selection-box room-selection-box" :style="roomSelectionStyle()" @pointerdown.stop><div class="object-transform-toolbar"><button title="Edit shape" aria-label="Edit shape" @click.stop="openPanel='selection'">✎</button><button title="Bring shape to front" aria-label="Bring shape to front" @click.stop="store.bringSelectionToFront"><Layers3/></button><button title="Remove shape" aria-label="Remove shape" @click.stop="store.deleteSelection"><Trash2/></button></div><button class="object-handle rotate-handle" title="Drag to rotate" aria-label="Rotate shape" @pointerdown.stop.prevent="beginRoomTransform($event,'rotate')" @pointermove.stop.prevent="moveRoomTransform" @pointerup.stop.prevent="finishRoomTransform" @pointercancel.stop.prevent="finishRoomTransform"><RotateCw aria-hidden="true"/></button><button class="object-handle resize-handle" title="Drag to resize" aria-label="Resize shape" @pointerdown.stop.prevent="beginRoomTransform($event,'scale')" @pointermove.stop.prevent="moveRoomTransform" @pointerup.stop.prevent="finishRoomTransform" @pointercancel.stop.prevent="finishRoomTransform"><Scaling aria-hidden="true"/></button></div>
     <div v-if="selectedLabel&&!draftLabelBox" class="object-selection-box scene-selection-box label-selection-box" :class="{'is-dragging':labelMoveDrag}" :style="labelSelectionStyle()" @pointerdown.stop.prevent="beginLabelMove" @dblclick.stop.prevent="editLabelAt"><div class="object-transform-toolbar" @pointerdown.stop><button title="Edit label" aria-label="Edit label" @click.stop="openPanel='selection'">✎</button><button title="Remove label" aria-label="Remove label" @click.stop="store.deleteSelection"><Trash2/></button></div><button class="object-handle rotate-handle" title="Drag to rotate" aria-label="Rotate label" @pointerdown.stop.prevent="beginLabelTransform($event,'rotate')"><RotateCw aria-hidden="true"/></button><button class="object-handle resize-handle" title="Drag to resize" aria-label="Resize label" @pointerdown.stop.prevent="beginLabelTransform($event,'scale')"><Scaling aria-hidden="true"/></button></div>
