@@ -681,3 +681,18 @@ test('keeps the update toast readable above the mobile tool dock',async({page})=
   expect(toast.y+toast.height).toBeLessThanOrEqual(dock.y)
   expect(button.width).toBeGreaterThan(200)
 })
+
+test('keeps the mobile tool dock within the visible viewport as its height changes',async({page})=>{
+  await page.setViewportSize({width:390,height:844})
+  await page.goto('/')
+  await page.getByRole('button',{name:/Open The Drowsy Village/}).click()
+  await expect(page.locator('.map-scene-canvas')).toBeVisible()
+  const dock=page.getByRole('navigation',{name:'Map tools'})
+  for(const height of [844,610]){
+    await page.setViewportSize({width:390,height})
+    const bounds=await dock.boundingBox()
+    expect(bounds.y).toBeGreaterThan(0)
+    expect(bounds.y+bounds.height).toBeLessThanOrEqual(height)
+    await expect(dock.getByRole('button',{name:'Erase'})).toBeVisible()
+  }
+})

@@ -14,7 +14,7 @@
 
 /* Observatory uses the map itself as the workspace. Chrome is deliberately
    floating and contextual so nothing permanently hems in the canvas. */
-.map-page{height:100vh;display:block;position:relative;overflow:hidden;background:#161814}
+.map-page{height:100dvh;display:block;position:relative;overflow:hidden;background:#161814}
 .map-page>.app-header{position:absolute;inset:0 0 auto 0;z-index:50;border:0;background:transparent;color:#eee9df}
 .map-page>.app-header .header-project span{color:#aaa79e}
 .map-page>.app-header .icon-button:hover{background:rgba(255,255,255,.09)}
